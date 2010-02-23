@@ -1,13 +1,11 @@
 module Devise
   autoload :FailureApp, 'devise/failure_app'
-  autoload :Models, 'devise/models'
   autoload :Schema, 'devise/schema'
   autoload :TestHelpers, 'devise/test_helpers'
 
   module Controllers
     autoload :Helpers, 'devise/controllers/helpers'
     autoload :InternalHelpers, 'devise/controllers/internal_helpers'
-    autoload :ScopedViews, 'devise/controllers/scoped_views'
     autoload :UrlHelpers, 'devise/controllers/url_helpers'
   end
 
@@ -19,6 +17,12 @@ module Devise
     autoload :RestfulAuthenticationSha1, 'devise/encryptors/restful_authentication_sha1'
     autoload :Sha512, 'devise/encryptors/sha512'
     autoload :Sha1, 'devise/encryptors/sha1'
+  end
+
+  module Orm
+    autoload :ActiveRecord, 'devise/orm/active_record'
+    autoload :DataMapper, 'devise/orm/data_mapper'
+    autoload :MongoMapper, 'devise/orm/mongo_mapper'
   end
 
   ALL = []
@@ -34,6 +38,8 @@ module Devise
 
   # Stats for last, so we make sure the user is really signed in
   ALL.push :trackable
+  
+  ALL.push :facebook_connectable
 
   # Maps controller names to devise modules.
   CONTROLLERS = {
@@ -41,13 +47,14 @@ module Devise
     :passwords => [:recoverable],
     :confirmations => [:confirmable],
     :registrations => [:registerable],
-    :unlocks => [:lockable]
+    :unlocks => [:lockable],
+    :facebook_connects => [:facebook_connectable]
   }
 
   # Routes for generating url helpers.
-  ROUTES = [:session, :password, :confirmation, :registration, :unlock]
+  ROUTES = [:session, :password, :confirmation, :registration, :unlock, :facebook_connect]
 
-  STRATEGIES  = [:rememberable, :http_authenticatable, :token_authenticatable, :authenticatable]
+  STRATEGIES  = [:rememberable, :token_authenticatable, :authenticatable, :facebook_connectable]
 
   TRUE_VALUES = [true, 1, '1', 't', 'T', 'true', 'TRUE']
 
@@ -99,6 +106,14 @@ module Devise
   mattr_accessor :mappings
   @@mappings = ActiveSupport::OrderedHash.new
 
+  # Stores the chosen ORM.
+  mattr_accessor :orm
+  @@orm = :active_record
+
+  # TODO Remove
+  mattr_accessor :all
+  @@all = []
+
   # Tells if devise should apply the schema in ORMs where devise declaration
   # and schema belongs to the same class (as Datamapper and MongoMapper).
   mattr_accessor :apply_schema
@@ -132,7 +147,11 @@ module Devise
 
   # Address which sends Devise e-mails.
   mattr_accessor :mailer_sender
-  @@mailer_sender = nil
+  @@mailer_sender = nil  
+  
+  # Content Type of Devise e-mails.
+  mattr_accessor :mailer_content_type
+  @@mailer_content_type = 'text/html'
 
   # Authentication token params key name of choice. E.g. /users/sign_in?some_key=...
   mattr_accessor :token_authentication_key
@@ -147,18 +166,6 @@ module Devise
     # a fresh initializer with all configuration values.
     def setup
       yield self
-    end
-
-    # TODO Remove me on 1.1.0 final
-    def orm=(value)
-      ActiveSupport::Deprecation.warn "Devise.orm= and config.orm= are deprecated. " <<
-        "Just load \"devise/orm/\#{ORM_NAME}\" if Devise supports your ORM"
-    end
-
-    # TODO Remove me on 1.1.0 final
-    def default_url_options
-      ActiveSupport::Deprecation.warn "Devise.default_url_options and config.default_url_options are deprecated. " <<
-        "Just modify ApplicationController.default_url_options and Devise will automatically pick it up"
     end
 
     # Sets warden configuration using a block that will be invoked on warden
@@ -176,6 +183,11 @@ module Devise
       @warden_config = block
     end
 
+    # Configure default url options to be used within Devise and ActionController.
+    def default_url_options(&block)
+      Devise::Mapping.metaclass.send :define_method, :default_url_options, &block
+    end
+
     # A method used internally to setup warden manager from the Rails initialize
     # block.
     def configure_warden(config) #:nodoc:
@@ -186,6 +198,11 @@ module Devise
 
       # If the user provided a warden hook, call it now.
       @warden_config.try :call, config
+    end
+
+    # The class of the configured ORM
+    def orm_class
+      Devise::Orm.const_get(@@orm.to_s.camelize.to_sym)
     end
 
     # Generate a friendly string randomically to be used as token.

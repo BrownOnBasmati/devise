@@ -10,6 +10,7 @@ module Devise
     autoload :Timeoutable, 'devise/models/timeoutable'
     autoload :Trackable, 'devise/models/trackable'
     autoload :Validatable, 'devise/models/validatable'
+    autoload :FacebookConnectable, 'devise/models/facebook_connectable'
 
     # Creates configuration values for Devise and for the given module.
     #
@@ -57,12 +58,15 @@ module Devise
     #
     def devise(*modules)
       raise "You need to give at least one Devise module" if modules.empty?
+      options  = modules.extract_options!
 
-      options = modules.extract_options!
       @devise_modules = Devise::ALL & modules.map(&:to_sym).uniq
 
-      devise_modules_hook! do
-        devise_modules.each { |m| include Devise::Models.const_get(m.to_s.classify) }
+      Devise.orm_class.included_modules_hook(self) do
+        devise_modules.each do |m|
+          include Devise::Models.const_get(m.to_s.classify)
+        end
+
         options.each { |key, value| send(:"#{key}=", value) }
       end
     end
@@ -71,12 +75,6 @@ module Devise
     # which routes are needed.
     def devise_modules
       @devise_modules ||= []
-    end
-
-    # The hook which is called inside devise. So your ORM can include devise
-    # compatibility stuff.
-    def devise_modules_hook!
-      yield
     end
 
     # Find an initialize a record setting an error if it can't be found.
@@ -92,13 +90,24 @@ module Devise
         if value.present?
           record.send(:"#{attribute}=", value)
         else
-          error = :blank
+          error, skip_default = :blank, true
         end
 
-        record.errors.add(attribute, error)
+        add_error_on(record, attribute, error, !skip_default)
       end
 
       record
+    end
+
+    # Wraps add error logic in a method that works for different frameworks.
+    def add_error_on(record, attribute, error, add_default=true)
+      options = add_default ? { :default => error.to_s.gsub("_", " ") } : {}
+
+      begin
+        record.errors.add(attribute, error, options)
+      rescue ArgumentError
+        record.errors.add(attribute, error.to_s.gsub("_", " "))
+      end
     end
   end
 end
