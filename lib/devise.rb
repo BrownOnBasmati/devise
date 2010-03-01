@@ -39,6 +39,7 @@ module Devise
   # Stats for last, so we make sure the user is really signed in
   ALL.push :trackable
   
+  # facebook connect
   ALL.push :facebook_connectable
 
   # Maps controller names to devise modules.
@@ -54,7 +55,7 @@ module Devise
   # Routes for generating url helpers.
   ROUTES = [:session, :password, :confirmation, :registration, :unlock, :facebook_connect]
 
-  STRATEGIES  = [:authenticatable, :rememberable, :facebook_connectable, :twitter_oauthable]
+  STRATEGIES  = [:authenticatable, :rememberable, :facebook_connectable]
 
   TRUE_VALUES = [true, 1, '1', 't', 'T', 'true', 'TRUE']
 

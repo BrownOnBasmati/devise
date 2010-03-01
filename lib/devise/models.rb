@@ -11,7 +11,6 @@ module Devise
     autoload :Trackable, 'devise/models/trackable'
     autoload :Validatable, 'devise/models/validatable'
     autoload :FacebookConnectable, 'devise/models/facebook_connectable'
-    autoload :TwitterOauthable, 'devise/models/twitter_oauthable'
 
     # Creates configuration values for Devise and for the given module.
     #

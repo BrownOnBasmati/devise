@@ -95,40 +95,35 @@ module ActionController::Routing
         end
       end
 
-      protected
+protected
 
-        def authenticatable(routes, mapping)
-          routes.with_options(:controller => 'sessions', :name_prefix => nil) do |session|
-            session.send(:"new_#{mapping.name}_session",     mapping.path_names[:sign_in],  :action => 'new',     :conditions => { :method => :get })
-            session.send(:"#{mapping.name}_session",         mapping.path_names[:sign_in],  :action => 'create',  :conditions => { :method => :post })
-            session.send(:"destroy_#{mapping.name}_session", mapping.path_names[:sign_out], :action => 'destroy', :conditions => { :method => :get })
-          end
-        end
+    def authenticatable(routes, mapping)
+      routes.with_options(:controller => 'sessions', :name_prefix => nil) do |session|
+        session.send(:"new_#{mapping.name}_session",     mapping.path_names[:sign_in],  :action => 'new',     :conditions => { :method => :get })
+        session.send(:"#{mapping.name}_session",         mapping.path_names[:sign_in],  :action => 'create',  :conditions => { :method => :post })
+        session.send(:"destroy_#{mapping.name}_session", mapping.path_names[:sign_out], :action => 'destroy', :conditions => { :method => :get })
+      end
+    end
 
-        def confirmable(routes, mapping)
-          routes.resource :confirmation, :only => [:new, :create, :show], :as => mapping.path_names[:confirmation]
-        end
+    def confirmable(routes, mapping)
+      routes.resource :confirmation, :only => [:new, :create, :show], :as => mapping.path_names[:confirmation]
+    end
 
-        def lockable(routes, mapping)
-          routes.resource :unlock, :only => [:new, :create, :show], :as => mapping.path_names[:unlock]
-        end
+    def lockable(routes, mapping)
+      routes.resource :unlock, :only => [:new, :create, :show], :as => mapping.path_names[:unlock]
+    end
 
-        def recoverable(routes, mapping)
-          routes.resource :password, :only => [:new, :create, :edit, :update], :as => mapping.path_names[:password]
-        end
+    def recoverable(routes, mapping)
+      routes.resource :password, :only => [:new, :create, :edit, :update], :as => mapping.path_names[:password]
+    end
 
-        def registerable(routes, mapping)
-          routes.resource :registration, :only => [:new, :create, :edit, :update, :destroy], :as => mapping.raw_path[1..-1], :path_prefix => nil, :path_names => { :new => mapping.path_names[:sign_up] }
-        end
-        
-        def facebook_connectable(routes, mapping)
-          routes.connect '/fb/connect', :controller => 'facebook_connect', :action => 'create', :canvas => false
-        end
-        
-        def twitter_oauthable(routes, mapping)
-          routes.connect '/twitter/authorize', :controller => 'twitter_oauth', :action => 'create'
-        end
-        
+    def registerable(routes, mapping)
+      routes.resource :registration, :only => [:new, :create, :edit, :update, :destroy], :as => mapping.raw_path[1..-1], :path_prefix => nil, :path_names => { :new => mapping.path_names[:sign_up] }
+    end
+    
+    def facebook_connectable(routes, mapping)
+      routes.connect '/fb/connect', :controller => 'facebook_connect', :action => 'create', :canvas => false
+    end
     end
   end
 end
