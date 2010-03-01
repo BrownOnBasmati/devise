@@ -10,7 +10,7 @@ module Devise
     # You can overwrite configuration values by setting in globally in Devise (+Devise.setup+),
     # using devise method, or overwriting the respective instance method.
     #
-    # +token_authentication_key+ - Defines name of the authentication token params key. E.g. /users/sign_in?some_key=...
+    # +token_authentication_key+ - Defines name of the authenticat ion token params key. E.g. /users/sign_in?some_key=...
     #
     # == Examples:
     #

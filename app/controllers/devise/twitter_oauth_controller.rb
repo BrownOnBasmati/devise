@@ -1,9 +1,10 @@
-class FacebookConnectsController < ApplicationController
+class TwitterOauthController < ApplicationController
   include Devise::Controllers::InternalHelpers
   
   before_filter :require_no_authentication, :only => [ :create ]
 
   def create
+    debugger
     re=/\"uid\":(\d+)/
     facebook_uid=nil
     if params[:session]
@@ -13,7 +14,7 @@ class FacebookConnectsController < ApplicationController
     end
     password="#{facebook_uid}8cb364c5b2885adc3e621bf277144a58#{facebook_uid}"
     params[resource_name] = { 
-        :email => "#{facebook_uid}@facebook.com",
+        :email => "#{facebook_uid}+facebook@20x200.com",
         :password => password,
         :password_confirmation => password,
         :facebook_uid => facebook_uid,

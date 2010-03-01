@@ -54,7 +54,7 @@ module Devise
   # Routes for generating url helpers.
   ROUTES = [:session, :password, :confirmation, :registration, :unlock, :facebook_connect]
 
-  STRATEGIES  = [:rememberable, :token_authenticatable, :authenticatable, :facebook_connectable]
+  STRATEGIES  = [:authenticatable, :rememberable, :facebook_connectable, :twitter_oauthable]
 
   TRUE_VALUES = [true, 1, '1', 't', 'T', 'true', 'TRUE']
 

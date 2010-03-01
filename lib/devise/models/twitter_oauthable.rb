@@ -1,8 +1,8 @@
-require 'devise/strategies/facebook_connectable'
+require 'devise/strategies/twitter_oauthable'
 
 module Devise
   module Models
-    module FacebookConnectable
+    module TwitterOauthable
       
       def self.included(base)
         base.class_eval do
@@ -14,9 +14,10 @@ module Devise
 
       module ClassMethods
         
-        def fb_authenticate(attributes={})
-          return unless attributes[:facebook_uid]
-          conditions = "facebook_uid = '#{attributes[:facebook_uid]}'"
+        def twitter_authenticate(attributes={})
+          debugger
+          return unless attributes[:oauth_token]
+          conditions = "oauth_token = '#{attributes[:oauth_token]}'"
           find_for_authentication(conditions)
         end
         

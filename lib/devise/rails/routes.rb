@@ -122,7 +122,11 @@ module ActionController::Routing
         end
         
         def facebook_connectable(routes, mapping)
-            routes.connect '/fb/connect', :controller => 'facebook_connects', :action => 'create', :canvas => false
+          routes.connect '/fb/connect', :controller => 'facebook_connect', :action => 'create', :canvas => false
+        end
+        
+        def twitter_oauthable(routes, mapping)
+          routes.connect '/twitter/authorize', :controller => 'twitter_oauth', :action => 'create'
         end
         
     end
